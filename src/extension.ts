@@ -1,6 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as child_process from 'child_process'
+import { PkgsListView} from './pkgsListView'
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -13,11 +15,33 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
+	let disposable = vscode.commands.registerCommand('extension.showpypkgs', () => {
 		// The code you place here will be executed every time your command is executed
+		const config = vscode.workspace.getConfiguration();
+		let currentPyPath = config.get<string>("python.pythonPath");
+		if (currentPyPath == undefined) {
+			vscode.window.showInformationMessage('No Python Path Found in Config');
+			return; 
+		} else {
+			vscode.window.showInformationMessage(currentPyPath);
+			try {
+				child_process.execSync(`${currentPyPath} -V`);
+			} catch (err) {
+				vscode.window.showInformationMessage("Not A Valid Python Path");
+				return;
+			}
+			
+			const packageRaw: string = child_process.execSync(`${currentPyPath} -m pip list`).toString().trim();
+			const packageInfo = packageRaw.split(/\s+/);
+			let packagesRes = '';
+			for (let i = 0; i < packageInfo.length; i += 2) {
+				packagesRes += packageInfo[i] + ' ' + packageInfo[i + 1] + '<br>';
+			}
+			let pkgs = new PkgsListView(vscode.ViewColumn.One);
+			pkgs.update(packagesRes);
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World!');
+
+		}
 	});
 
 	context.subscriptions.push(disposable);
