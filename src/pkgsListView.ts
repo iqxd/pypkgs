@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 export class PkgsListView implements vscode.Disposable {
     
     private readonly panel: vscode.WebviewPanel;
-    private readonly extensionPath: string;
     private isListViewLoaded: boolean = false;
     private isPanelVisiable: boolean = true;
     private disposables: vscode.Disposable[] = [];
@@ -15,8 +14,7 @@ export class PkgsListView implements vscode.Disposable {
 			enableScripts: true
         });
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
-        this.update("");
-     
+        this.update([]);
     }
 
     dispose() {
@@ -24,11 +22,17 @@ export class PkgsListView implements vscode.Disposable {
      }
     
     //Update the HTML document loaded in the Webview.
-    update(content:string) {
-        this.panel.webview.html = this.getHtmlForWebview(content);
+    update(packages:Array<[string,string]>) {
+        this.panel.webview.html = this.getHtmlForWebview(packages);
     }
 
-    getHtmlForWebview(content:string) {
+    getHtmlForWebview(packages: Array<[string, string]>) {
+        let content = `<table border="1">`;
+        for (const [name, version] of packages) {
+            content += `<tr><td>${name}</td><td>${version}</td></tr>`;
+        }
+        content += `</table>`;
+
         return `<!DOCTYPE html> 
                 <html lang="en">
                 <head>

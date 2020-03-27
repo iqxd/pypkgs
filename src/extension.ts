@@ -33,12 +33,13 @@ export function activate(context: vscode.ExtensionContext) {
 			
 			const packageRaw: string = child_process.execSync(`${currentPyPath} -m pip list`).toString().trim();
 			const packageInfo = packageRaw.split(/\s+/);
-			let packagesRes = '';
+			
+			let packageList : Array<[string,string]> = [] ;
 			for (let i = 0; i < packageInfo.length; i += 2) {
-				packagesRes += packageInfo[i] + ' ' + packageInfo[i + 1] + '<br>';
+				packageList.push([ packageInfo[i], packageInfo[i + 1]]) ;
 			}
 			let pkgs = new PkgsListView(vscode.ViewColumn.One);
-			pkgs.update(packagesRes);
+			pkgs.update(packageList);
 
 
 		}
