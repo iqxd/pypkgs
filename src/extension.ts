@@ -23,9 +23,10 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage('No Python Path Found in Config');
 			return; 
 		} else {
+			let pythonVer :string ="";
 			vscode.window.showInformationMessage(currentPyPath);
 			try {
-				child_process.execSync(`${currentPyPath} -V`);
+				pythonVer = child_process.execSync(`${currentPyPath} -V`).toString().trim();
 			} catch (err) {
 				vscode.window.showInformationMessage("Not A Valid Python Path");
 				return;
@@ -39,7 +40,8 @@ export function activate(context: vscode.ExtensionContext) {
 				packageList.push([ packageInfo[i], packageInfo[i + 1]]) ;
 			}
 			let pkgs = new PkgsListView(vscode.ViewColumn.One);
-			pkgs.update(packageList);
+			let pythonInfo = `${pythonVer} ${currentPyPath}`
+			pkgs.update(pythonInfo,packageList);
 
 
 		}
