@@ -30,7 +30,7 @@ export class PythonEnv {
         const packagesList = packagesRaw.split(/\s+/);
 			
         let packagesNameVersion : Array<[string,string]> = [] ;
-        for (let i = 2; i < packagesList.length; i += 2) {
+        for (let i = 4; i < packagesList.length; i += 2) {    //start from 4 , skip the first two lines in raw text
             packagesNameVersion.push([ packagesList[i], packagesList[i + 1]]) ;
         }
         return packagesNameVersion

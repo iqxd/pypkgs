@@ -33,24 +33,36 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 			
-			const packageRaw: string = child_process.execSync(`${currentPyPath} -m pip list`).toString().trim();
-			const packageInfo = packageRaw.split(/\s+/);
+			// const packageRaw: string = child_process.execSync(`${currentPyPath} -m pip list`).toString().trim();
+			// const packageInfo = packageRaw.split(/\s+/);
 			
-			let packageList : Array<[string,string]> = [] ;
-			for (let i = 0; i < packageInfo.length; i += 2) {
-				packageList.push([ packageInfo[i], packageInfo[i + 1]]) ;
-			}
-			let pkgs = new PkgsListView(vscode.ViewColumn.One);
-			let pythonInfo = `${pythonVer} ${currentPyPath}`
-			pkgs.update(pythonInfo,packageList);
+			// let packageList : Array<[string,string]> = [] ;
+			// for (let i = 0; i < packageInfo.length; i += 2) {
+			// 	packageList.push([ packageInfo[i], packageInfo[i + 1]]) ;
+			// }
 
 			const python = new PythonEnv(currentPyPath);
-			const pkgdetails = python.getPackageDetails(['PyQt5','jedi']);
-			for (const pkg of pkgdetails)
-				console.log(pkg);
+			const pkgNameVer = python.getPackagesNameVersion();
+			const pkgDetails = python.getPackageDetails(pkgNameVer.map(x=>x[0]));
 			
+			let pythonInfo = `${pythonVer} ${currentPyPath}`
+
+			let pkgs = new PkgsListView(vscode.ViewColumn.One);
+
+			let content = `<table id = 'pkgs' border= '1'><caption>${pythonInfo}</caption>`;
+			for (const detail of pkgDetails) {
+				if (detail != null) {
+					content += `<tr><td>${detail.name}</td><td>${detail.version}</td><td>${detail.summary}
+					</td><td>${detail.homepage}</td><td>${detail.author}</td><td>${detail.authoremail}</td>
+					<td>${detail.license}</td><td>${detail.location}</td></tr>`;
+				}
+			}
+			content += `</table>`;	
 
 
+			pkgs.update(content);
+
+		
 		}
 	});
 

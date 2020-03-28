@@ -14,7 +14,7 @@ export class PkgsListView implements vscode.Disposable {
 			enableScripts: true
         });
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
-        this.update("",[]);
+        this.update("");
     }
 
     dispose() {
@@ -22,16 +22,12 @@ export class PkgsListView implements vscode.Disposable {
      }
     
     //Update the HTML document loaded in the Webview.
-    update(pythonInfo :string ,packages:Array<[string,string]>) {
-        this.panel.webview.html = this.getHtmlForWebview(pythonInfo,packages);
+    update(content:string) {
+        this.panel.webview.html = this.getHtmlForWebview(content);
     }
 
-    getHtmlForWebview(pythonInfo :string,packages: Array<[string, string]>) {
-        let content = `<table id = 'pkgs' border= '1'><caption>${pythonInfo}</caption>`;
-        for (const [name, version] of packages) {
-            content += `<tr><td>${name}</td><td>${version}</td></tr>`;
-        }
-        content += `</table>`;
+    getHtmlForWebview(content:string) :string {
+       
 
         return `<!DOCTYPE html> 
                 <html lang="en">
