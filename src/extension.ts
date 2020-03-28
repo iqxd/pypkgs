@@ -45,8 +45,11 @@ export function activate(context: vscode.ExtensionContext) {
 			pkgs.update(pythonInfo,packageList);
 
 			const python = new PythonEnv(currentPyPath);
-			const jedi = python.getPackageDetails('jedi');
-			console.log(jedi);
+			const pkgdetails = python.getPackageDetails(['PyQt5','jedi']);
+			for (const pkg of pkgdetails)
+				console.log(pkg);
+			
+
 
 		}
 	});
