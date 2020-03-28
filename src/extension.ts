@@ -1,8 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as child_process from 'child_process'
-import { PkgsListView} from './pkgsListView'
+import * as child_process from 'child_process';
+import { PkgsListView } from './pkgsListView';
+import { PythonEnv } from './pythonenv';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -43,6 +44,9 @@ export function activate(context: vscode.ExtensionContext) {
 			let pythonInfo = `${pythonVer} ${currentPyPath}`
 			pkgs.update(pythonInfo,packageList);
 
+			const python = new PythonEnv(currentPyPath);
+			const jedi = python.getPackageDetails('jedi');
+			console.log(jedi);
 
 		}
 	});
