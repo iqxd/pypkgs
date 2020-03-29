@@ -42,8 +42,8 @@ export function activate(context: vscode.ExtensionContext) {
 			// }
 
 			const python = new PythonEnv(currentPyPath);
-			const pkgNameVer = python.getPackagesNameVersion();
-			const pkgDetails = python.getPackageDetails(pkgNameVer.map(x=>x[0]));
+			const pkgNameVer = python.getPkgNameVerList();
+			const pkgDetails = python.getPkgInfoList(pkgNameVer.map(x=>x[0]));
 			
 			let pythonInfo = `${pythonVer} ${currentPyPath}`
 

@@ -1,6 +1,6 @@
 import { execSync } from "child_process"
 
-class Package{
+class PkgInfo{
     name: string="";
     version: string="";
     summary: string="";
@@ -25,37 +25,37 @@ export class PythonEnv {
         return ver;
     }
 
-    getPackagesNameVersion(): Array<[string, string]>{
-        const packagesRaw =  execSync(`${this.path} -m pip list`).toString().trim()
-        const packagesList = packagesRaw.split(/\s+/);
+    getPkgNameVerList(): Array<[string, string]>{
+        const pkgNameVerRawTest =  execSync(`${this.path} -m pip list`).toString().trim()
+        const pkgNameVerStringList = pkgNameVerRawTest.split(/\s+/);
 			
-        let packagesNameVersion : Array<[string,string]> = [] ;
-        for (let i = 4; i < packagesList.length; i += 2) {    //start from 4 , skip the first two lines in raw text
-            packagesNameVersion.push([ packagesList[i], packagesList[i + 1]]) ;
+        let pkgNameVerList : Array<[string,string]> = [] ;
+        for (let i = 4; i < pkgNameVerStringList.length; i += 2) {    //start from 4 , skip the first two lines in raw text
+            pkgNameVerList.push([pkgNameVerStringList[i], pkgNameVerStringList[i + 1]]) ;
         }
-        return packagesNameVersion
+        return pkgNameVerList
     }
 
-    getPackageDetails(packagesName: string | string[]): Array<Package|null> {
+    getPkgInfoList(pkgNameList: string | string[]): Array<PkgInfo | null> {
 
-        if (typeof packagesName == "string") {
-            packagesName = [packagesName]
+        if (typeof pkgNameList == "string") {
+            pkgNameList = [pkgNameList]
         }
 
         //reserve array by length, set null as default
-        let packagesDetail: Array<Package | null> = [];
-        for (let i = 0; i < packagesName.length; i++)
-            packagesDetail.push(null);
+        let pkgInfoList: Array<PkgInfo | null> = [];
+        for (let i = 0; i < pkgNameList.length; i++)
+            pkgInfoList.push(null);
 
-        let packagesDetailRaw: string;
+        let pkgInfoRawText: string;
         try {
-            packagesDetailRaw = execSync(`${this.path} -m pip show ${packagesName.join(' ')}`).toString().trim();
+            pkgInfoRawText = execSync(`${this.path} -m pip show ${pkgNameList.join(' ')}`).toString().trim();
         } catch(err) {
-            return packagesDetail;
+            return pkgInfoList;
         }
 
-        for (const para of packagesDetailRaw.split('\r\n---\r\n')) {
-            let packageDetail = new Package();
+        for (const para of pkgInfoRawText.split('\r\n---\r\n')) {
+            let pkgInfo = new PkgInfo();
             for (const line of para.split(/\r\n/)) {
                 let index = line.search(":");
                 let name = line.substring(0, index).trim();
@@ -63,45 +63,45 @@ export class PythonEnv {
                 //   let [name, value] = line.split(':').map(x => x.trim());
                 switch (name) {
                     case 'Name':
-                        packageDetail.name = value;
+                        pkgInfo.name = value;
                         break;
                     case 'Version':
-                        packageDetail.version = value;
+                        pkgInfo.version = value;
                         break;
                     case 'Summary':
-                        packageDetail.summary = value;
+                        pkgInfo.summary = value;
                         break;
                     case 'Home-page':
-                        packageDetail.homepage = value;
+                        pkgInfo.homepage = value;
                         break;
                     case 'Author':
-                        packageDetail.author = value;
+                        pkgInfo.author = value;
                         break;
                     case 'Author-email':
-                        packageDetail.authoremail = value;
+                        pkgInfo.authoremail = value;
                         break;
                     case 'License':
-                        packageDetail.license = value;
+                        pkgInfo.license = value;
                         break;
                     case 'Location':
-                        packageDetail.location = value;
+                        pkgInfo.location = value;
                         break;
                     case 'Requires':
-                        packageDetail.requires = value == "" ? [] : value.split(',').map(x => x.trim());
+                        pkgInfo.requires = value == "" ? [] : value.split(',').map(x => x.trim());
                         break;
                     case 'Required-by':
-                        packageDetail.requiredby = value == "" ? [] : value.split(',').map(x => x.trim());
+                        pkgInfo.requiredby = value == "" ? [] : value.split(',').map(x => x.trim());
                         break;
                 }  
             }
             //replace the package by position in input array.
-            for (let i = 0; i < packagesName.length; i++) {
-                if (packagesName[i] == packageDetail.name) {
-                    packagesDetail[i] = packageDetail;
+            for (let i = 0; i < pkgNameList.length; i++) {
+                if (pkgNameList[i] == pkgInfo.name) {
+                    pkgInfoList[i] = pkgInfo;
                 }
             }
         }
-        return packagesDetail;
+        return pkgInfoList;
     }
 
 }
