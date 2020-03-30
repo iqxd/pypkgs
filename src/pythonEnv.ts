@@ -21,17 +21,17 @@ export class PythonEnv {
     }
 
     getIntepreterVersion(): string {
-        const ver  = execSync(`${this.path} -V`).toString().trim();
+        const ver = execSync(`${this.path} -V`).toString().trim();
         return ver;
     }
 
-    getPkgNameVerList(): Array<[string, string]>{
-        const pkgNameVerRawTest =  execSync(`${this.path} -m pip list`).toString().trim()
+    getPkgNameVerList(): Array<[string, string]> {
+        const pkgNameVerRawTest = execSync(`${this.path} -m pip list`).toString().trim()
         const pkgNameVerStringList = pkgNameVerRawTest.split(/\s+/);
 			
-        let pkgNameVerList : Array<[string,string]> = [] ;
+        let pkgNameVerList: Array<[string, string]> = [];
         for (let i = 4; i < pkgNameVerStringList.length; i += 2) {    //start from 4 , skip the first two lines in raw text
-            pkgNameVerList.push([pkgNameVerStringList[i], pkgNameVerStringList[i + 1]]) ;
+            pkgNameVerList.push([pkgNameVerStringList[i], pkgNameVerStringList[i + 1]]);
         }
         return pkgNameVerList
     }
@@ -50,7 +50,7 @@ export class PythonEnv {
         let pkgInfoRawText: string;
         try {
             pkgInfoRawText = execSync(`${this.path} -m pip show ${pkgNameList.join(' ')}`).toString().trim();
-        } catch(err) {
+        } catch (err) {
             return pkgInfoList;
         }
 
@@ -92,7 +92,7 @@ export class PythonEnv {
                     case 'Required-by':
                         pkgInfo.requiredby = value == "" ? [] : value.split(',').map(x => x.trim());
                         break;
-                }  
+                }
             }
             //replace the package by position in input array.
             for (let i = 0; i < pkgNameList.length; i++) {
@@ -104,6 +104,17 @@ export class PythonEnv {
         return pkgInfoList;
     }
 
+    getPkgAllVers(pkgName: string): string[] {
+        let vers: string[] = [];
+        try {
+            execSync(`${this.path} -m pip install ${pkgName}==`).toString().trim();
+        } catch (err)
+        {
+            const versText:string = err.message.split('(from versions:')[1].split(')')[0];
+            vers = versText.split(',').map(x=>x.trim());
+        }
+        return vers;
+    }
 }
 
 
