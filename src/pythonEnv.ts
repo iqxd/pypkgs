@@ -105,13 +105,14 @@ export class PythonEnv {
     }
 
     getPkgAllVers(pkgName: string): string[] {
+        // order from late version to early version
         let vers: string[] = [];
         try {
             execSync(`${this.path} -m pip install ${pkgName}==`).toString().trim();
         } catch (err)
         {
             const versText:string = err.message.split('(from versions:')[1].split(')')[0];
-            vers = versText.split(',').map(x=>x.trim());
+            vers = versText.split(',').map(x=>x.trim()).reverse();
         }
         return vers;
     }

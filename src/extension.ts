@@ -42,19 +42,29 @@ export function activate(context: vscode.ExtensionContext) {
 			// }
 
 			const python = new PythonEnv(currentPyPath);
-			const pkgNameVer = python.getPkgNameVerList();
-			const pkgDetails = python.getPkgInfoList(pkgNameVer.map(x=>x[0]));
+			const pkgsBasics = python.getPkgNameVerList();
+			const pkgsNames = pkgsBasics.map(x => x[0]);
+
+			const pkgsDetails = python.getPkgInfoList(pkgsNames);
 			
 			let pythonInfo = `${pythonVer} ${currentPyPath}`
 
 			let pkgs = new PkgsListView(vscode.ViewColumn.One);
 
 			let content = `<table id = 'pkgs' border= '1'><caption>${pythonInfo}</caption>`;
-			for (const detail of pkgDetails) {
+			let versdroplist = `<select>`;
+			for (const detail of pkgsDetails) {
 				if (detail != null) {
+					let versDropDownList = `<select>`;
+					let pkgVers = python.getPkgAllVers(detail.name);
+					for (const ver of pkgVers) {
+						versDropDownList += `<option value ="${ver}">${ver}</option>`;
+					}
+					versDropDownList += `</select>`;
+
 					content += `<tr><td>${detail.name}</td><td>${detail.version}</td><td>${detail.summary}
 					</td><td>${detail.homepage}</td><td>${detail.author}</td><td>${detail.authoremail}</td>
-					<td>${detail.license}</td><td>${detail.location}</td></tr>`;
+					<td>${detail.license}</td><td>${detail.location}</td><td>${versDropDownList}</td></tr>`;
 				}
 			}
 			content += `</table>`;	
