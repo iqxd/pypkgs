@@ -2,8 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
-import { PkgsListView } from './pkgsListView';
-import { PythonEnv } from './pythonenv';
+import { PkgsListView } from './PkgsListView';
+import { PythonEnv } from './PythonEnv';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
