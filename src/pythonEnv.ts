@@ -1,4 +1,7 @@
-import { execSync } from "child_process"
+import * as child_process from "child_process";
+import { promisify } from "util";
+
+const exec = promisify(child_process.exec);
 
 class PkgInfo{
     name: string="";
@@ -20,13 +23,13 @@ export class PythonEnv {
         this.path = path;
     }
 
-    getIntepreterVersion(): string {
-        const ver = execSync(`${this.path} -V`).toString().trim();
-        return ver;
+    async getIntepreterVersion():Promise<string> {
+        const { stdout ,stderr } = await exec(`${this.path} -V`);
+        return stdout;
     }
 
     getPkgNameVerList(): Array<[string, string]> {
-        const pkgNameVerRawTest = execSync(`${this.path} -m pip list`).toString().trim()
+        const pkgNameVerRawTest = child_process.execSync(`${this.path} -m pip list`).toString().trim()
         const pkgNameVerStringList = pkgNameVerRawTest.split(/\s+/);
 			
         let pkgNameVerList: Array<[string, string]> = [];
@@ -49,7 +52,7 @@ export class PythonEnv {
 
         let pkgInfoRawText: string;
         try {
-            pkgInfoRawText = execSync(`${this.path} -m pip show ${pkgNameList.join(' ')}`).toString().trim();
+            pkgInfoRawText = child_process.execSync(`${this.path} -m pip show ${pkgNameList.join(' ')}`).toString().trim();
         } catch (err) {
             return pkgInfoList;
         }
@@ -108,7 +111,7 @@ export class PythonEnv {
         // order from late version to early version
         let vers: string[] = [];
         try {
-            execSync(`${this.path} -m pip install ${pkgName}==`).toString().trim();
+            child_process.execSync(`${this.path} -m pip install ${pkgName}==`).toString().trim();
         } catch (err)
         {
             const versText:string = err.message.split('(from versions:')[1].split(')')[0];
