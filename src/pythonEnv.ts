@@ -16,6 +16,11 @@ class PkgInfo{
     requiredby: string[] =[];
 }
 
+class PkgVersInfo{
+    name: string="";
+    allvers: string[] =[];
+}
+
 export class PythonEnv {
     private readonly path: string;
     
@@ -120,16 +125,17 @@ export class PythonEnv {
 
     }
 
-    async getPkgAllVers(pkgName: string): Promise<string[]> {
+    async getPkgAllVers(pkgName: string): Promise<PkgVersInfo> {
         // order from late version to early version
         let vers: string[] = [];
         try {
             const { stdout, stderr } = await exec(`${this.path} -m pip install ${pkgName}==`);
-            return vers;
+           
         } catch (error) {
             const versText:string = error.message.split('(from versions:')[1].split(')')[0];
             vers = versText.split(',').map(x=>x.trim()).reverse();
-            return vers;
+        } finally {
+            return { name: pkgName , allvers :vers};
         }
 
 

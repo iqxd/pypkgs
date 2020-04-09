@@ -7,7 +7,7 @@ import { PythonEnv } from './PythonEnv';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
@@ -39,7 +39,17 @@ export function activate(context: vscode.ExtensionContext) {
 		const pkgsBasics = await python.getPkgNameVerList();
 		const pkgsNames = pkgsBasics.map(x => x[0]);
 
-		const pkgsDetails = await python.getPkgInfoList(pkgsNames);
+		let promises : Promise<any>[] = [python.getPkgInfoList(pkgsNames)]
+		for (const pkgName of pkgsNames) {
+			promises.push(python.getPkgAllVers(pkgName));
+		}
+
+		const [pkgsDetails, ...pkgsVers] = await Promise.all(promises);
+		
+		let pkgVersDict : { [key: string]: string[] }= {};
+		for (const pkgVers of pkgsVers) {
+			pkgVersDict[pkgVers.name] = pkgVers.allvers;
+		}
 
 		let pythonInfo = `${pythonVer} ${currentPyPath}`
 
@@ -50,7 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
 		for (const detail of pkgsDetails) {
 			if (detail != null) {
 				let versDropDownList = `<select>`;
-				let pkgVers = await python.getPkgAllVers(detail.name);
+				let pkgVers = pkgVersDict[detail.name]
 				for (const ver of pkgVers) {
 					versDropDownList += `<option value ="${ver}">${ver}</option>`;
 				}
