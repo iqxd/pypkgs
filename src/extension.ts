@@ -30,8 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		const python = new PythonEnv(currentPyPath);
 
 		const pythonVer = await python.getIntepreterVersion();
-		if (!pythonVer)
-		{
+		if (!pythonVer) {
 			vscode.window.showInformationMessage("Not A Valid Python Path");
 			return;
 		}
@@ -39,14 +38,14 @@ export async function activate(context: vscode.ExtensionContext) {
 		const pkgsBasics = await python.getPkgNameVerList();
 		const pkgsNames = pkgsBasics.map(x => x[0]);
 
-		let promises : Promise<any>[] = [python.getPkgInfoList(pkgsNames)]
+		let promises: Promise<any>[] = [python.getPkgInfoList(pkgsNames)]
 		for (const pkgName of pkgsNames) {
 			promises.push(python.getPkgAllVers(pkgName));
 		}
 
 		const [pkgsDetails, ...pkgsVers] = await Promise.all(promises);
-		
-		let pkgVersDict : { [key: string]: string[] }= {};
+
+		let pkgVersDict: { [key: string]: string[] } = {};
 		for (const pkgVers of pkgsVers) {
 			pkgVersDict[pkgVers.name] = pkgVers.allvers;
 		}
