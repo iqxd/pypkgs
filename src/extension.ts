@@ -16,68 +16,62 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('extension.showpypkgs', () => {
+	let disposable = vscode.commands.registerCommand('extension.showpypkgs', async () => {
 		// The code you place here will be executed every time your command is executed
 		const config = vscode.workspace.getConfiguration();
 		let currentPyPath = config.get<string>("python.pythonPath");
 		if (currentPyPath == undefined) {
 			vscode.window.showInformationMessage('No Python Path Found in Config');
-			return; 
-		} else {
-			let pythonVer :string ="";
-			vscode.window.showInformationMessage(currentPyPath);
-			try {
-				pythonVer = child_process.execSync(`${currentPyPath} -V`).toString().trim();
-			} catch (err) {
-				vscode.window.showInformationMessage("Not A Valid Python Path");
-				return;
-			}
-			
-			// const packageRaw: string = child_process.execSync(`${currentPyPath} -m pip list`).toString().trim();
-			// const packageInfo = packageRaw.split(/\s+/);
-			
-			// let packageList : Array<[string,string]> = [] ;
-			// for (let i = 0; i < packageInfo.length; i += 2) {
-			// 	packageList.push([ packageInfo[i], packageInfo[i + 1]]) ;
-			// }
+			return;
+		}
+		vscode.window.showInformationMessage(currentPyPath);
 
-			const python = new PythonEnv(currentPyPath);
-			const pkgsBasics = python.getPkgNameVerList();
-			const pkgsNames = pkgsBasics.map(x => x[0]);
 
-			const pkgsDetails = python.getPkgInfoList(pkgsNames);
-			
-			let pythonInfo = `${pythonVer} ${currentPyPath}`
+		const python = new PythonEnv(currentPyPath);
 
-			let pkgs = new PkgsListView(vscode.ViewColumn.One);
+		const pythonVer = await python.getIntepreterVersion();
+		if (!pythonVer)
+		{
+			vscode.window.showInformationMessage("Not A Valid Python Path");
+			return;
+		}
 
-			let content = `<table id = 'pkgs' border= '1'><caption>${pythonInfo}</caption>`;
-			let versdroplist = `<select>`;
-			for (const detail of pkgsDetails) {
-				if (detail != null) {
-					let versDropDownList = `<select>`;
-					let pkgVers = python.getPkgAllVers(detail.name);
-					for (const ver of pkgVers) {
-						versDropDownList += `<option value ="${ver}">${ver}</option>`;
-					}
-					versDropDownList += `</select>`;
+		const pkgsBasics = await python.getPkgNameVerList();
+		const pkgsNames = pkgsBasics.map(x => x[0]);
 
-					content += `<tr><td>${detail.name}</td><td>${detail.version}</td><td>${detail.summary}
+		const pkgsDetails = await python.getPkgInfoList(pkgsNames);
+
+		let pythonInfo = `${pythonVer} ${currentPyPath}`
+
+		let pkgs = new PkgsListView(vscode.ViewColumn.One);
+
+		let content = `<table id = 'pkgs' border= '1'><caption>${pythonInfo}</caption>`;
+		let versdroplist = `<select>`;
+		for (const detail of pkgsDetails) {
+			if (detail != null) {
+				let versDropDownList = `<select>`;
+				let pkgVers = await python.getPkgAllVers(detail.name);
+				for (const ver of pkgVers) {
+					versDropDownList += `<option value ="${ver}">${ver}</option>`;
+				}
+				versDropDownList += `</select>`;
+
+				content += `<tr><td>${detail.name}</td><td>${detail.version}</td><td>${detail.summary}
 					</td><td>${detail.homepage}</td><td>${detail.author}</td><td>${detail.authoremail}</td>
 					<td>${detail.license}</td><td>${detail.location}</td><td>${versDropDownList}</td></tr>`;
-				}
 			}
-			content += `</table>`;	
-
-
-			pkgs.update(content);
-
-		
 		}
+		content += `</table>`;
+
+
+		pkgs.update(content);
+
+
+
 	});
 
 	context.subscriptions.push(disposable);
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
