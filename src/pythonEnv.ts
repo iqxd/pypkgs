@@ -42,11 +42,14 @@ export class PythonEnv {
         const { stdout ,stderr } = await exec(`${this.path} -m pip list`)
 
         const pkgNameVerRawTest = stdout;
-        const pkgNameVerStringList = pkgNameVerRawTest.split(/\s+/);
+        let pkgNameVerStringList = pkgNameVerRawTest.split('\r\n');
 			
         let pkgNameVerList: Array<[string, string]> = [];
-        for (let i = 4; i < pkgNameVerStringList.length; i += 2) {    //start from 4 , skip the first two lines in raw text
-            pkgNameVerList.push([pkgNameVerStringList[i], pkgNameVerStringList[i + 1]]);
+        for (let i = 2; i < pkgNameVerStringList.length; i++ ) {    //start from 2 , skip the top two lines in raw text
+            const [name, ver] = pkgNameVerStringList[i].split(/\s+/);
+            if (name !== '') {
+                pkgNameVerList.push([name, ver]);
+            }
         }
         return pkgNameVerList
     }
