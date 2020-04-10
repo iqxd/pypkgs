@@ -38,45 +38,36 @@ export async function activate(context: vscode.ExtensionContext) {
 		const pkgsBasics = await python.getPkgNameVerList();
 		const pkgsNames = pkgsBasics.map(x => x[0]);
 
-		let promises: Promise<any>[] = [python.getPkgInfoList(pkgsNames)]
+		let pythonInfo = `${pythonVer} ${currentPyPath}`;
+
+		let pkgs = new PkgsListView(pkgsNames.length, 9, pythonInfo, context.extensionPath, vscode.ViewColumn.One);
+
+
+
+		let promiseGetDetails = python.getPkgInfoList(pkgsNames);
+		
+		let promisesGetVers: Promise<any>[] = []
 		for (const pkgName of pkgsNames) {
-			promises.push(python.getPkgAllVers(pkgName));
+			promisesGetVers.push(python.getPkgAllVers(pkgName));
 		}
 
-		const [pkgsDetails, ...pkgsVers] = await Promise.all(promises);
+		//const [pkgsDetails, ...pkgsVers] = await Promise.all(promises);
 
-		let pkgVersDict: { [key: string]: string[] } = {};
-		for (const pkgVers of pkgsVers) {
-			pkgVersDict[pkgVers.name] = pkgVers.allvers;
-		}
+		// let pkgVersDict: { [key: string]: string[] } = {};
+		// for (const pkgVers of pkgsVers) {
+		// 	pkgVersDict[pkgVers.name] = pkgVers.allvers;
+		// }
 
-		let pythonInfo = `${pythonVer} ${currentPyPath}`
-
-		let pkgs = new PkgsListView(vscode.ViewColumn.One);
-
-		let content = `<table id = 'pkgs' border= '1'><caption>${pythonInfo}</caption>`;
-		let versdroplist = `<select>`;
-		for (const detail of pkgsDetails) {
-			if (detail != null) {
-				let versDropDownList = `<select>`;
-				let pkgVers = pkgVersDict[detail.name]
-				for (const ver of pkgVers) {
-					versDropDownList += `<option value ="${ver}">${ver}</option>`;
-				}
-				versDropDownList += `</select>`;
-
-				content += `<tr><td>${detail.name}</td><td>${detail.version}</td><td>${detail.summary}
-					</td><td>${detail.homepage}</td><td>${detail.author}</td><td>${detail.authoremail}</td>
-					<td>${detail.license}</td><td>${detail.location}</td><td>${versDropDownList}</td></tr>`;
+		promiseGetDetails.then((pkgsDetails) => {
+			for (let row = 0; row < pkgsDetails.length; row++) {
+				pkgs.loadPkgsDetails(pkgsDetails[row], row);
 			}
+		});
+		for (let row = 0; row < promisesGetVers.length; row++){
+			promisesGetVers[row].then((pkgVer) => {
+				pkgs.loadPkgVers(pkgVer, row);
+			});
 		}
-		content += `</table>`;
-
-
-		pkgs.update(content);
-
-
-
 	});
 
 	context.subscriptions.push(disposable);

@@ -3,7 +3,7 @@ import { promisify } from "util";
 
 const exec = promisify(child_process.exec);
 
-class PkgInfo{
+export class PkgInfo{
     name: string="";
     version: string="";
     summary: string="";
@@ -16,7 +16,7 @@ class PkgInfo{
     requiredby: string[] =[];
 }
 
-class PkgVersInfo{
+export class PkgVersInfo{
     name: string="";
     allvers: string[] =[];
 }
@@ -51,16 +51,16 @@ export class PythonEnv {
         return pkgNameVerList
     }
 
-    async getPkgInfoList(pkgNameList: string | string[]): Promise<Array<PkgInfo | null>> {
+    async getPkgInfoList(pkgNameList: string | string[]): Promise<Array<PkgInfo>> {
 
         if (typeof pkgNameList == "string") {
             pkgNameList = [pkgNameList]
         }
 
         //reserve array by length, set null as default
-        let pkgInfoList: Array<PkgInfo | null> = [];
+        let pkgInfoList: Array<PkgInfo> = [];
         for (let i = 0; i < pkgNameList.length; i++)
-            pkgInfoList.push(null);
+            pkgInfoList.push(new PkgInfo());
 
         let pkgInfoRawText: string;
 
