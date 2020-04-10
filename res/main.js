@@ -21,7 +21,7 @@
             row.cells[7].innerHTML = message.location;
         } else if (dataType == 'vers') {
             let vers = JSON.parse(message.allvers);
-            let dropdown = '<select>';
+            let dropdown = '<select style="width:90px;">';
             for (let ver of vers) {
                 dropdown += `<option value ="${ver}">${ver}</option>`;
             }

@@ -11,12 +11,12 @@ export class PkgsListView implements vscode.Disposable {
     private isPanelVisiable: boolean = true;
     private disposables: vscode.Disposable[] = [];
 
-    constructor(rowCount:number , colCount:number, desc:string, extensionPath:string ,column: vscode.ViewColumn | undefined) { 
+    constructor(pythonInfo :string ,column: vscode.ViewColumn | undefined) { 
         this.panel = vscode.window.createWebviewPanel('pypkgs', 'Python Packages', column || vscode.ViewColumn.One, {
 			enableScripts: true
         });
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
-        this.update(rowCount, colCount, desc, extensionPath);
+        this.updateBlank(pythonInfo);
         
         // Handle messages from the webview
 		this.panel.webview.onDidReceiveMessage(
@@ -37,20 +37,20 @@ export class PkgsListView implements vscode.Disposable {
         this.panel.dispose();
     }
     
-    loadPkgsDetails(pkgInfo:PkgInfo,row:number) {
-        this.panel.webview.postMessage({
-            type : 'details',
-            row : row,
-            name: pkgInfo.name,
-            version: pkgInfo.version,
-            summary: pkgInfo.summary,
-            homepage: pkgInfo.homepage,
-            author: pkgInfo.author,
-            authoremail: pkgInfo.authoremail,
-            license: pkgInfo.license,
-            location: pkgInfo.location
-        });
-    }
+    // loadPkgsDetails(pkgInfo:PkgInfo,row:number) {
+    //     this.panel.webview.postMessage({
+    //         type : 'details',
+    //         row : row,
+    //         name: pkgInfo.name,
+    //         version: pkgInfo.version,
+    //         summary: pkgInfo.summary,
+    //         homepage: pkgInfo.homepage,
+    //         author: pkgInfo.author,
+    //         authoremail: pkgInfo.authoremail,
+    //         license: pkgInfo.license,
+    //         location: pkgInfo.location
+    //     });
+    // }
 
     loadPkgVers(versInfo:PkgVersInfo,row:number) {
         this.panel.webview.postMessage({
@@ -60,29 +60,51 @@ export class PkgsListView implements vscode.Disposable {
             allvers: JSON.stringify(versInfo.allvers)
         });
     }
+
+    updateBlank(pythonInfo: string) {
+        this.panel.webview.html =`<!DOCTYPE html> 
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Packages</title>
+            </head>
+            <body>
+                <h3>${pythonInfo}</h3>
+            </body>
+            </html>`;
+    }
     
-    //Update the HTML document loaded in the Webview.
-    update(rowCount:number , colCount:number,desc:string,extensionPath:string) {
-        this.panel.webview.html = this.getHtmlForWebview(rowCount,colCount,desc,extensionPath);
+    
+    updateDetails(pythonInfo :string, pkgsDetails:PkgInfo[],extensionPath:string) {
+        this.panel.webview.html = this.getHtmlForDetails(pythonInfo,pkgsDetails,extensionPath);
     }
 
-    getHtmlForWebview(rowCount: number, colCount: number, desc: string,extensionPath:string): string {
+    getHtmlForDetails(pythonInfo:string, pkgsDetails:PkgInfo[] ,extensionPath:string): string {
         const scriptPathOnDisk = vscode.Uri.file(
 			path.join(extensionPath, 'res', 'main.js')
 		);
 
 		// And the uri we use to load this script in the webview
 		const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
-
-
+        
         let tableContent: string = '<table id="content" border="1">';
-        for (let row = 0; row < rowCount; row++){
-            tableContent += '<tr>';
-            for (let col = 0; col < colCount; col++){
-                tableContent += '<td></td>';
-            }
-            tableContent += '</tr>';
+
+        for (const pkgDetails of pkgsDetails) {    
+            tableContent += `<tr>
+                            <td>${pkgDetails.name}</td>
+                            <td>${pkgDetails.version}</td>
+                            <td>${pkgDetails.summary}</td>
+                            <td>${pkgDetails.homepage}</td>
+                             <td>${pkgDetails.author}</td>
+                             <td>${pkgDetails.authoremail}</td>
+                             <td>${pkgDetails.license}</td>
+                             <td>${pkgDetails.location}</td>
+                             <td><select style="width:90px;"></select></td>
+                             </tr>`;
         }
+
+
         tableContent += '</table>';
 
         return `<!DOCTYPE html> 
@@ -93,7 +115,7 @@ export class PkgsListView implements vscode.Disposable {
                     <title>Packages</title>
                 </head>
                 <body>
-                    <h3>${desc}</h3>
+                    <h3>${pythonInfo}</h3>
                     ${tableContent}
                     <script src="${scriptUri}"></script>
                 </body>

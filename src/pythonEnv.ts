@@ -57,7 +57,6 @@ export class PythonEnv {
             pkgNameList = [pkgNameList]
         }
 
-        //reserve array by length, set null as default
         let pkgInfoList: Array<PkgInfo> = [];
         for (let i = 0; i < pkgNameList.length; i++)
             pkgInfoList.push(new PkgInfo());

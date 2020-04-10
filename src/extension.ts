@@ -35,17 +35,16 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
+		let pythonInfo = `${pythonVer} ${currentPyPath}`;
+		let pkgs = new PkgsListView(pythonInfo, vscode.ViewColumn.One);
+
 		const pkgsBasics = await python.getPkgNameVerList();
 		const pkgsNames = pkgsBasics.map(x => x[0]);
 
-		let pythonInfo = `${pythonVer} ${currentPyPath}`;
-
-		let pkgs = new PkgsListView(pkgsNames.length, 9, pythonInfo, context.extensionPath, vscode.ViewColumn.One);
-
-
-
-		let promiseGetDetails = python.getPkgInfoList(pkgsNames);
+		let pkgsDetails = await python.getPkgInfoList(pkgsNames);
 		
+		pkgs.updateDetails(pythonInfo, pkgsDetails, context.extensionPath);
+
 		let promisesGetVers: Promise<any>[] = []
 		for (const pkgName of pkgsNames) {
 			promisesGetVers.push(python.getPkgAllVers(pkgName));
@@ -58,12 +57,12 @@ export async function activate(context: vscode.ExtensionContext) {
 		// 	pkgVersDict[pkgVers.name] = pkgVers.allvers;
 		// }
 
-		promiseGetDetails.then((pkgsDetails) => {
-			for (let row = 0; row < pkgsDetails.length; row++) {
-				pkgs.loadPkgsDetails(pkgsDetails[row], row);
-			}
-		});
-		for (let row = 0; row < promisesGetVers.length; row++){
+		// promiseGetDetails.then((pkgsDetails) => {
+		// 	for (let row = 0; row < pkgsDetails.length; row++) {
+		// 		pkgs.loadPkgsDetails(pkgsDetails[row], row);
+		// 	}
+		// });
+		for (let row = 0; row < promisesGetVers.length; row++) {
 			promisesGetVers[row].then((pkgVer) => {
 				pkgs.loadPkgVers(pkgVer, row);
 			});
