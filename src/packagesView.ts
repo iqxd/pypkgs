@@ -13,7 +13,8 @@ export class PackagesView implements vscode.Disposable {
 
     constructor(pythonInfo :string ,column: vscode.ViewColumn | undefined) { 
         this.panel = vscode.window.createWebviewPanel('pypkgs', 'Python Packages', column || vscode.ViewColumn.One, {
-			enableScripts: true
+            enableScripts: true,
+            retainContextWhenHidden: true,
         });
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
         this.updateBlank(pythonInfo);
