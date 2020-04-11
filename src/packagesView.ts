@@ -1,10 +1,10 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { PkgInfo,PkgVersInfo} from './PythonEnv';
+import { PkgDetail} from './pythonManager';
 
 
 
-export class PkgsListView implements vscode.Disposable {
+export class PackagesView implements vscode.Disposable {
     
     private readonly panel: vscode.WebviewPanel;
     private isListViewLoaded: boolean = false;
@@ -52,12 +52,11 @@ export class PkgsListView implements vscode.Disposable {
     //     });
     // }
 
-    loadPkgVers(versInfo:PkgVersInfo,row:number) {
+    loadPkgVers(PkgValidVerList:string[],row:number) {
         this.panel.webview.postMessage({
             type :'vers',
             row: row ,
-            name: versInfo.name,
-            allvers: JSON.stringify(versInfo.allvers)
+            allvers: JSON.stringify(PkgValidVerList)
         });
     }
 
@@ -76,11 +75,11 @@ export class PkgsListView implements vscode.Disposable {
     }
     
     
-    updateDetails(pythonInfo :string, pkgsDetails:PkgInfo[],extensionPath:string) {
+    updateDetails(pythonInfo :string, pkgsDetails:PkgDetail[],extensionPath:string) {
         this.panel.webview.html = this.getHtmlForDetails(pythonInfo,pkgsDetails,extensionPath);
     }
 
-    getHtmlForDetails(pythonInfo:string, pkgsDetails:PkgInfo[] ,extensionPath:string): string {
+    getHtmlForDetails(pythonInfo:string, pkgsDetails:PkgDetail[] ,extensionPath:string): string {
         const scriptPathOnDisk = vscode.Uri.file(
 			path.join(extensionPath, 'res', 'main.js')
 		);

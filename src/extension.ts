@@ -2,8 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
-import { PkgsListView } from './PkgsListView';
-import { PythonEnv } from './PythonEnv';
+import { PackagesView } from './packagesView';
+import { PythonManager } from './pythonManager';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -27,27 +27,27 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage(currentPyPath);
 
 
-		const python = new PythonEnv(currentPyPath);
+		const python = new PythonManager(currentPyPath);
 
-		const pythonVer = await python.getIntepreterVersion();
-		if (!pythonVer) {
+		
+		if (!python.valid) {
 			vscode.window.showInformationMessage("Not A Valid Python Path");
 			return;
 		}
 
-		let pythonInfo = `${pythonVer} ${currentPyPath}`;
-		let pkgs = new PkgsListView(pythonInfo, vscode.ViewColumn.One);
+		let pythonInfo = `${python.version} ${currentPyPath}`;
+		let pkgs = new PackagesView(pythonInfo, vscode.ViewColumn.One);
 
 		const pkgsBasics = await python.getPkgNameVerList();
 		const pkgsNames = pkgsBasics.map(x => x[0]);
 
-		let pkgsDetails = await python.getPkgInfoList(pkgsNames);
+		let pkgsDetails = await python.getPkgDetailList(pkgsNames);
 		
 		pkgs.updateDetails(pythonInfo, pkgsDetails, context.extensionPath);
 
-		let promisesGetVers: Promise<any>[] = []
+		let promisesGetVers: Promise<any>[] = [];
 		for (const pkgName of pkgsNames) {
-			promisesGetVers.push(python.getPkgAllVers(pkgName));
+			promisesGetVers.push(python.getPkgValidVerList(pkgName));
 		}
 
 		//const [pkgsDetails, ...pkgsVers] = await Promise.all(promises);
