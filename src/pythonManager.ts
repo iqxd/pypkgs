@@ -37,7 +37,7 @@ export interface PkgDetail {
 export class PythonManager {
     //public static intepreter: PythonManager | null;
 
-    private readonly path: string;
+    public readonly path: string;
     public readonly version: string | undefined ;
     public readonly valid: boolean;
 

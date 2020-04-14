@@ -1,68 +1,92 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { PkgDetail} from './pythonManager';
+import { PkgDetail, PythonManager } from './pythonManager';
 
 
 
 export class PackagesView implements vscode.Disposable {
-    
+    public static currentPanel: PackagesView | undefined;
+
     private readonly panel: vscode.WebviewPanel;
+    private readonly extensionPath: string;
+    private readonly pythonManager: PythonManager;
     private isListViewLoaded: boolean = false;
     private isPanelVisiable: boolean = true;
     private disposables: vscode.Disposable[] = [];
 
-    constructor(pythonInfo :string ,column: vscode.ViewColumn | undefined) { 
+    public static createOrShow(extensionPath: string, pythonManager: PythonManager) {
+        const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
+
+        if (PackagesView.currentPanel) {
+            PackagesView.currentPanel.panel.reveal(column);
+        } else {
+            PackagesView.currentPanel = new PackagesView(extensionPath, pythonManager, column);
+        }
+    }
+
+
+    private constructor(extensionPath: string, pythonManager: PythonManager, column: vscode.ViewColumn | undefined) {
         this.panel = vscode.window.createWebviewPanel('pypkgs', 'Python Packages', column || vscode.ViewColumn.One, {
             enableScripts: true,
             retainContextWhenHidden: true,
         });
-        this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
-        this.updateBlank(pythonInfo);
-        
-        // Handle messages from the webview
-		this.panel.webview.onDidReceiveMessage(
-			message => {
-				switch (message.command) {
-					case 'alert':
-						vscode.window.showErrorMessage(message.text);
-						return;
-				}
-			},
-			null,
-			this.disposables
-		);
+        this.extensionPath = extensionPath;
+        this.pythonManager = pythonManager;
 
+        this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
+        this.updateBlank(`${pythonManager.version} ${pythonManager.path}`);
+
+        // Handle messages from the webview
+        this.panel.webview.onDidReceiveMessage(
+            message => {
+                switch (message.command) {
+                    case 'alert':
+                        vscode.window.showErrorMessage(message.text);
+                        return;
+                }
+            },
+            null,
+            this.disposables
+        );
+
+        this.fetchAndLoad();
     }
+
+    async fetchAndLoad() {
+        const pkgsBasics = await this.pythonManager.getPkgNameVerList();
+		const pkgsNames = pkgsBasics.map(x => x[0]);
+
+		let pkgsDetails = await this.pythonManager.getPkgDetailList(pkgsNames);
+		
+		 this.updateDetails(`${this.pythonManager.version} ${this.pythonManager.path}`, pkgsDetails);
+
+		let promisesGetVers: Promise<any>[] = [];
+		for (const pkgName of pkgsNames) {
+			promisesGetVers.push(this.pythonManager.getPkgValidVerList(pkgName));
+        }
+        
+        for (let row = 0; row < promisesGetVers.length; row++) {
+			promisesGetVers[row].then((pkgVer) => {
+				this.loadPkgVers(pkgVer, row);
+			});
+		}
+    }
+
 
     dispose() {
         this.panel.dispose();
     }
-    
-    // loadPkgsDetails(pkgInfo:PkgInfo,row:number) {
-    //     this.panel.webview.postMessage({
-    //         type : 'details',
-    //         row : row,
-    //         name: pkgInfo.name,
-    //         version: pkgInfo.version,
-    //         summary: pkgInfo.summary,
-    //         homepage: pkgInfo.homepage,
-    //         author: pkgInfo.author,
-    //         authoremail: pkgInfo.authoremail,
-    //         license: pkgInfo.license,
-    //         location: pkgInfo.location
-    //     });
-    // }
 
-    loadPkgVers(PkgValidVerList:string[],row:number) {
+    loadPkgVers(PkgValidVerList: string[], row: number) {
         this.panel.webview.postMessage({
-            type :'vers',
-            row: row ,
+            type: 'vers',
+            row: row,
             allvers: JSON.stringify(PkgValidVerList)
         });
     }
 
     updateBlank(pythonInfo: string) {
-        this.panel.webview.html =`<!DOCTYPE html> 
+        this.panel.webview.html = `<!DOCTYPE html> 
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
@@ -74,23 +98,23 @@ export class PackagesView implements vscode.Disposable {
             </body>
             </html>`;
     }
-    
-    
-    updateDetails(pythonInfo :string, pkgsDetails:PkgDetail[],extensionPath:string) {
-        this.panel.webview.html = this.getHtmlForDetails(pythonInfo,pkgsDetails,extensionPath);
+
+
+    updateDetails(pythonInfo: string, pkgsDetails: PkgDetail[]) {
+        this.panel.webview.html = this.getHtmlForDetails(pythonInfo, pkgsDetails, this.extensionPath);
     }
 
-    getHtmlForDetails(pythonInfo:string, pkgsDetails:PkgDetail[] ,extensionPath:string): string {
+    getHtmlForDetails(pythonInfo: string, pkgsDetails: PkgDetail[], extensionPath: string): string {
         const scriptPathOnDisk = vscode.Uri.file(
-			path.join(extensionPath, 'res', 'main.js')
-		);
+            path.join(extensionPath, 'res', 'main.js')
+        );
 
-		// And the uri we use to load this script in the webview
-		const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
-        
+        // And the uri we use to load this script in the webview
+        const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
+
         let tableContent: string = '<table id="content" border="1">';
 
-        for (const pkgDetails of pkgsDetails) {    
+        for (const pkgDetails of pkgsDetails) {
             tableContent += `<tr>
                             <td>${pkgDetails.name}</td>
                             <td>${pkgDetails.version}</td>

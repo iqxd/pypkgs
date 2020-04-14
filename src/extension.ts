@@ -35,38 +35,8 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		let pythonInfo = `${python.version} ${currentPyPath}`;
-		let pkgs = new PackagesView(pythonInfo, vscode.ViewColumn.One);
+		PackagesView.createOrShow(context.extensionPath, python);
 
-		const pkgsBasics = await python.getPkgNameVerList();
-		const pkgsNames = pkgsBasics.map(x => x[0]);
-
-		let pkgsDetails = await python.getPkgDetailList(pkgsNames);
-		
-		pkgs.updateDetails(pythonInfo, pkgsDetails, context.extensionPath);
-
-		let promisesGetVers: Promise<any>[] = [];
-		for (const pkgName of pkgsNames) {
-			promisesGetVers.push(python.getPkgValidVerList(pkgName));
-		}
-
-		//const [pkgsDetails, ...pkgsVers] = await Promise.all(promises);
-
-		// let pkgVersDict: { [key: string]: string[] } = {};
-		// for (const pkgVers of pkgsVers) {
-		// 	pkgVersDict[pkgVers.name] = pkgVers.allvers;
-		// }
-
-		// promiseGetDetails.then((pkgsDetails) => {
-		// 	for (let row = 0; row < pkgsDetails.length; row++) {
-		// 		pkgs.loadPkgsDetails(pkgsDetails[row], row);
-		// 	}
-		// });
-		for (let row = 0; row < promisesGetVers.length; row++) {
-			promisesGetVers[row].then((pkgVer) => {
-				pkgs.loadPkgVers(pkgVer, row);
-			});
-		}
 	});
 
 	context.subscriptions.push(disposable);
