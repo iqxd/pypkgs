@@ -21,6 +21,7 @@ export class PackagesView implements vscode.Disposable {
             PackagesView.currentPanel.panel.reveal(column);
         } else {
             PackagesView.currentPanel = new PackagesView(extensionPath, pythonManager, column);
+            PackagesView.currentPanel.fetchAndShow();
         }
     }
 
@@ -49,10 +50,9 @@ export class PackagesView implements vscode.Disposable {
             this.disposables
         );
 
-        this.fetchAndLoad();
     }
 
-    async fetchAndLoad() {
+    async fetchAndShow() {
         const pkgsBasics = await this.pythonManager.getPkgNameVerList();
 		const pkgsNames = pkgsBasics.map(x => x[0]);
 
