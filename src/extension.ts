@@ -29,7 +29,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		const python = new PythonManager(currentPyPath);
 
-		
+
 		if (!python.valid) {
 			vscode.window.showInformationMessage("Not A Valid Python Path");
 			return;

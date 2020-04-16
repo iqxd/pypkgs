@@ -17,16 +17,16 @@ const exec = promisify(child_process.exec);
 // }
 
 export interface PkgDetail {
-    name: string ,
-    version: string ,
-    summary: string ,
-    homepage: string ,
-    author: string ,
-    authoremail: string ,
-    license: string ,
-    location: string ,
-    requires: string[] ,
-    requiredby: string[] ,
+    name: string,
+    version: string,
+    summary: string,
+    homepage: string,
+    author: string,
+    authoremail: string,
+    license: string,
+    location: string,
+    requires: string[],
+    requiredby: string[],
 }
 
 
@@ -38,7 +38,7 @@ export class PythonManager {
     //public static intepreter: PythonManager | null;
 
     public readonly path: string;
-    public readonly version: string | undefined ;
+    public readonly version: string | undefined;
     public readonly valid: boolean;
 
     public static checkVersion(path: string): string | undefined {
@@ -82,20 +82,20 @@ export class PythonManager {
         let pkgDetailList: Array<PkgDetail> = [];
 
         const emptyDetail: PkgDetail = {
-            name:'',
-            version:'',
-            summary:'',
-            homepage:'',
-            author:'',
-            authoremail:'',
-            license:'',
-            location:'',
+            name: '',
+            version: '',
+            summary: '',
+            homepage: '',
+            author: '',
+            authoremail: '',
+            license: '',
+            location: '',
             requires: [],
             requiredby: [],
         }
 
         for (let i = 0; i < pkgNameList.length; i++)
-            pkgDetailList.push({...emptyDetail});
+            pkgDetailList.push({ ...emptyDetail });
 
         let pkgDetailRawText: string;
 
@@ -104,7 +104,7 @@ export class PythonManager {
             pkgDetailRawText = stdout;
 
             for (const para of pkgDetailRawText.split('\r\n---\r\n')) {
-                let pkgDetail: PkgDetail = {...emptyDetail};
+                let pkgDetail: PkgDetail = { ...emptyDetail };
                 for (const line of para.split(/\r\n/)) {
                     let index = line.search(":");
                     let name = line.substring(0, index).trim();

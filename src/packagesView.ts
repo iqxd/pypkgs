@@ -54,22 +54,22 @@ export class PackagesView implements vscode.Disposable {
 
     async fetchAndShow() {
         const pkgsBasics = await this.pythonManager.getPkgNameVerList();
-		const pkgsNames = pkgsBasics.map(x => x[0]);
+        const pkgsNames = pkgsBasics.map(x => x[0]);
 
-		let pkgsDetails = await this.pythonManager.getPkgDetailList(pkgsNames);
-		
-		 this.updateDetails(`${this.pythonManager.version} ${this.pythonManager.path}`, pkgsDetails);
+        let pkgsDetails = await this.pythonManager.getPkgDetailList(pkgsNames);
 
-		let promisesGetVers: Promise<any>[] = [];
-		for (const pkgName of pkgsNames) {
-			promisesGetVers.push(this.pythonManager.getPkgValidVerList(pkgName));
+        this.updateDetails(`${this.pythonManager.version} ${this.pythonManager.path}`, pkgsDetails);
+
+        let promisesGetVers: Promise<any>[] = [];
+        for (const pkgName of pkgsNames) {
+            promisesGetVers.push(this.pythonManager.getPkgValidVerList(pkgName));
         }
-        
+
         for (let row = 0; row < promisesGetVers.length; row++) {
-			promisesGetVers[row].then((pkgVer) => {
-				this.loadPkgVers(pkgVer, row);
-			});
-		}
+            promisesGetVers[row].then((pkgVer) => {
+                this.loadPkgVers(pkgVer, row);
+            });
+        }
     }
 
 
