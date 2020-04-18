@@ -60,16 +60,14 @@ export class PackagesView implements vscode.Disposable {
 
         this.updateDetails(`${this.pythonManager.version} ${this.pythonManager.path}`, pkgsDetails);
 
-        let promisesGetVers: Promise<any>[] = [];
-        for (const pkgName of pkgsNames) {
-            promisesGetVers.push(this.pythonManager.getPkgValidVerList(pkgName));
-        }
-
+        const promisesGetVers = pkgsNames.map(pkgName => this.pythonManager.getPkgValidVerList(pkgName));
+        
         for (let row = 0; row < promisesGetVers.length; row++) {
             promisesGetVers[row].then((pkgVer) => {
                 this.loadPkgVers(pkgVer, row);
             });
         }
+
     }
 
 
