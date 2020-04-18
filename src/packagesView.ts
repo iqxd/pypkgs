@@ -74,6 +74,7 @@ export class PackagesView implements vscode.Disposable {
 
 
     dispose() {
+        PackagesView.currentPanel = undefined;
         this.panel.dispose();
     }
 
