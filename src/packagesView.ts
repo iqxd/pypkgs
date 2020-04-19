@@ -10,8 +10,8 @@ export class PackagesView implements vscode.Disposable {
     private readonly panel: vscode.WebviewPanel;
     private readonly extensionPath: string;
     private readonly pythonManager: PythonManager;
-    private isListViewLoaded: boolean = false;
-    private isPanelVisiable: boolean = true;
+    // private isListViewLoaded: boolean = false;
+    // private isPanelVisiable: boolean = true;
     private disposables: vscode.Disposable[] = [];
 
     public static createOrShow(extensionPath: string, pythonManager: PythonManager) {
@@ -111,16 +111,27 @@ export class PackagesView implements vscode.Disposable {
         // And the uri we use to load this script in the webview
         const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
 
-        let tableContent: string = '<table id="content" border="1">';
+        let tableContent: string = `<table id="content" border="1">
+                <tr>
+                <th>NAME</th>
+                <th>VERSION</th>
+                <th>SUMMARY</th>
+                <th>HOMEPAGE</th>
+                <th>AUTHOR</th>
+                <th>AUTHOREMAIL</th>
+                <th>LICENSE</th>
+                <th>LOCATION</th>
+                <th>AVAILABLE VERSIONS</th>
+                </tr>`;
 
         for (const pkgDetails of pkgsDetails) {
             tableContent += `<tr>
                             <td>${pkgDetails.name}</td>
                             <td>${pkgDetails.version}</td>
                             <td>${pkgDetails.summary}</td>
-                            <td>${pkgDetails.homepage}</td>
+                            <td><a href=${pkgDetails.homepage}>${pkgDetails.homepage}</td>
                              <td>${pkgDetails.author}</td>
-                             <td>${pkgDetails.authoremail}</td>
+                             <td><a href=mailto:${pkgDetails.authoremail}>${pkgDetails.authoremail}</td>
                              <td>${pkgDetails.license}</td>
                              <td>${pkgDetails.location}</td>
                              <td><select style="width:90px;"></select></td>

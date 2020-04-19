@@ -30,7 +30,7 @@ function versionStringCompare(preVersion = '', lastVersion = '') {
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
         const dataType = message.type;
-        let row = table.rows[message.row];
+        let row = table.rows[message.row+1]; // row 0 is title, from row 1 onwards
         if (dataType == 'vers') {
             let vers = JSON.parse(message.allvers);
             let dropdown = '<select style="width:90px;">';
