@@ -1,4 +1,6 @@
 import * as child_process from "child_process";
+import * as fs from 'fs';
+import * as path from 'path';
 import { promisify } from "util";
 
 const exec = promisify(child_process.exec);
@@ -133,7 +135,20 @@ export class PythonManager {
                             pkgDetail.license = value;
                             break;
                         case 'Location':
-                            pkgDetail.location = value;
+                            const location = value;
+                            let pkgSourceLocation: string;
+                            // replace location by package folder path or script path(only one py file)
+                            const currentPkgName = pkgDetail.name;
+                            const singleScriptPath = path.join(location, currentPkgName + '.py');
+                            const sourceFolderPath = path.join(location, currentPkgName);
+                            if (fs.existsSync(singleScriptPath)) {
+                                pkgSourceLocation = singleScriptPath;
+                            } else if (fs.existsSync(sourceFolderPath)) {
+                                pkgSourceLocation = sourceFolderPath;
+                            } else {
+                                pkgSourceLocation = location; //parent path 
+                            }
+                            pkgDetail.location = pkgSourceLocation;
                             break;
                         case 'Requires':
                             pkgDetail.requires = value == "" ? [] : value.split(',').map(x => x.trim());
