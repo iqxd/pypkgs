@@ -2,6 +2,7 @@ import * as child_process from "child_process";
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from "util";
+import * as glob from 'glob';
 
 const exec = promisify(child_process.exec);
 
@@ -140,13 +141,41 @@ export class PythonManager {
                             // replace location by package folder path or script path(only one py file)
                             const currentPkgName = pkgDetail.name;
                             const singleScriptPath = path.join(location, currentPkgName + '.py');
-                            const sourceFolderPath = path.join(location, currentPkgName);
+                            let sourceFolderPath = path.join(location, currentPkgName);
                             if (fs.existsSync(singleScriptPath)) {
                                 pkgSourceLocation = singleScriptPath;
                             } else if (fs.existsSync(sourceFolderPath)) {
                                 pkgSourceLocation = sourceFolderPath;
                             } else {
-                                pkgSourceLocation = location; //parent path 
+                                //find top_level.txt for module name
+                                const topLevelPattenPath = path.join(location, `${currentPkgName}-${pkgDetail.version}*-info/top_level.txt`)
+                                const topLevelPattenPathAlter = path.join(location,`${currentPkgName.replace(/-/g,'_')}-${pkgDetail.version}*-info/top_level.txt`)
+                                
+                                let files = glob.sync(topLevelPattenPath);
+                                let filesAlter = glob.sync(topLevelPattenPathAlter);
+                                
+                                let topLevelPath: string | undefined;
+                                if (files.length === 1) {
+                                    topLevelPath = files[0];
+                                } else if (filesAlter.length === 1) {
+                                    topLevelPath = filesAlter[0];
+                                } else {
+                                    topLevelPath = undefined;
+                                }
+
+                                if (topLevelPath) {
+                                    pkgSourceLocation = ""; 
+                                    const moduleNames = fs.readFileSync(topLevelPath).toString().trim().split(/\n/).map(x => x.trim());
+                                    for (const moduleName of moduleNames) {
+                                        sourceFolderPath = path.join(location, moduleName);
+                                        if (fs.existsSync(sourceFolderPath)) {
+                                            pkgSourceLocation = sourceFolderPath;
+                                            break;
+                                        } 
+                                    }
+                                } else {
+                                    pkgSourceLocation = "";  // not find the top_level.txt path
+                                }
                             }
                             pkgDetail.location = pkgSourceLocation;
                             break;
