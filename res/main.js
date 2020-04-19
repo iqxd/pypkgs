@@ -1,5 +1,7 @@
 // This script will be run within the webview itself
 // It cannot access the main VS Code APIs directly.
+const vscode = acquireVsCodeApi();
+
 function versionStringCompare(preVersion = '', lastVersion = '') {
     var sources = preVersion.split('.');
     var dests = lastVersion.split('.');
@@ -21,8 +23,11 @@ function versionStringCompare(preVersion = '', lastVersion = '') {
     return result;
 }
 
+function openFolder() {
+    vscode.postMessage({ command: 'openFolder', path: event.currentTarget.innerHTML });
+}
+
 (function () {
-    const vscode = acquireVsCodeApi();
 
     const table = document.getElementById('content');
 

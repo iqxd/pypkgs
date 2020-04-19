@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { PkgDetail, PythonManager } from './pythonManager';
 
+import { PkgDetail, PythonManager } from './pythonManager';
 
 
 export class PackagesView implements vscode.Disposable {
@@ -41,9 +41,9 @@ export class PackagesView implements vscode.Disposable {
         this.panel.webview.onDidReceiveMessage(
             message => {
                 switch (message.command) {
-                    case 'alert':
-                        vscode.window.showErrorMessage(message.text);
-                        return;
+                    case 'openFolder':
+                        const pkgFolderPath = vscode.Uri.file(message.path)
+                        vscode.commands.executeCommand('vscode.openFolder', pkgFolderPath , true);  // true : open folder in a new window
                 }
             },
             null,
@@ -133,7 +133,7 @@ export class PackagesView implements vscode.Disposable {
                              <td>${pkgDetails.author}</td>
                              <td><a href=mailto:${pkgDetails.authoremail}>${pkgDetails.authoremail}</td>
                              <td>${pkgDetails.license}</td>
-                             <td>${pkgDetails.location}</td>
+                             <td><a href=${pkgDetails.location} onclick="openFolder()">${pkgDetails.location}</td>
                              <td><select style="width:90px;"></select></td>
                              </tr>`;
         }
