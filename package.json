@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.showpypkgs"
+		"onCommand:extension.showpypkgs",
+		"onLanguage:python"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
